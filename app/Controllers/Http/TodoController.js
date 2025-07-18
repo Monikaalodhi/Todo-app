@@ -15,41 +15,43 @@ class TodoController {
   }
 
   // Create todo with validation
-  async store({ request, response, auth }) {
-    const data = request.only(['title', 'description'])
-    const todo = new Todo()
-    todo.fill(data)
-    todo.user_id = auth.user.id
-    await todo.save()
+async store({ request, response, auth }) {
+  const data = request.only(['title', 'description', 'status', 'priority'])
 
-    // 🔹 Create log after todo creation
-    await Log.create({
-      user_id: auth.user.id,
-      action: `Created Todo: ${todo.title}`
-    })
+  const todo = new Todo()
+  todo.fill(data)
+  todo.user_id = auth.user.id
+  await todo.save()
 
-    return response.json(todo)
+  // 🔹 Create log after todo creation
+  await Log.create({
+    user_id: auth.user.id,
+    action: `Created Todo: ${todo.title}`
+  })
+
+  return response.json(todo)
+}
+
+// Update todo
+async update({ params, request, response, auth }) {
+  const todo = await Todo.findOrFail(params.id)
+  if (todo.user_id !== auth.user.id) {
+    return response.unauthorized()
   }
 
-  // Update todo
-  async update({ params, request, response, auth }) {
-    const todo = await Todo.findOrFail(params.id)
-    if (todo.user_id !== auth.user.id) {
-      return response.unauthorized()
-    }
+  const data = request.only(['title', 'description', 'is_completed', 'status', 'priority'])
+  todo.merge(data)
+  await todo.save()
 
-    const data = request.only(['title', 'description', 'is_completed'])
-    todo.merge(data)
-    await todo.save()
+  // 🔹 Create log after update
+  await Log.create({
+    user_id: auth.user.id,
+    action: `Updated Todo: ${todo.title}`
+  })
 
-    // 🔹 Create log after update
-    await Log.create({
-      user_id: auth.user.id,
-      action: `Updated Todo: ${todo.title}`
-    })
+  return response.json(todo)
+}
 
-    return response.json(todo)
-  }
 
   // Delete todo
   async destroy({ params, response, auth }) {

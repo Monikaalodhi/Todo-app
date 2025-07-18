@@ -12,7 +12,7 @@ Route.post('login', 'UserController.login')
 Route.group(() => {
   Route.get('todos', 'TodoController.index')     // List todos (with pagination)
   Route.post('todos', 'TodoController.store').validator('CreateTodo') // Create todo
-  Route.put('todos/:id', 'TodoController.update')// Update todo
+  Route.put('todos/:id', 'TodoController.update').validator('UpdateTodo') // Update todo
   Route.delete('todos/:id', 'TodoController.destroy') // Delete todo
 //  Logs route 
   Route.get('logs', 'LogController.index')
